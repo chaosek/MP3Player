@@ -1,12 +1,8 @@
-const CACHE = 'mp3player-v3';
+const CACHE = 'mp3player-v4';
 const ASSETS = [
   './',
   './index.html',
-  './manifest.json',
-  './icons/icon-192.png',
-  './icons/icon-512.png',
-  './icons/icon-192-maskable.png',
-  './icons/icon-512-maskable.png'
+  './manifest.json'
 ];
 
 self.addEventListener('install', e => {
@@ -30,13 +26,8 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   if (e.request.url.startsWith('blob:')) return;
-  // Network-first for manifest so PWA install prompt works reliably
-  if (e.request.url.includes('manifest.json')) {
-    e.respondWith(
-      fetch(e.request).catch(() => caches.match(e.request))
-    );
-    return;
-  }
+  if (e.request.url.startsWith('data:')) return;
+
   e.respondWith(
     caches.match(e.request).then(cached => {
       if (cached) return cached;
