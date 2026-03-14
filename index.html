@@ -259,14 +259,15 @@
     #upload-area {
       padding: 12px 18px;
       border-top: 1px solid var(--border);
+      display: flex;
+      gap: 8px;
     }
-    #upload-btn {
+    .upload-btn {
+      flex: 1;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
-      width: 100%;
-      padding: 11px;
+      padding: 11px 8px;
       background: var(--bg3);
       border: 1px dashed #2a2a35;
       border-radius: 8px;
@@ -278,9 +279,10 @@
       font-family: inherit;
       text-transform: uppercase;
       touch-action: manipulation;
+      text-align: center;
     }
-    #upload-btn:active { border-color: var(--accent-dark); color: var(--accent); }
-    #file-input { display: none; }
+    .upload-btn:active { border-color: var(--accent-dark); color: var(--accent); }
+    #file-input, #folder-input { display: none; }
 
     /* ── Install banner ── */
     #install-banner {
@@ -380,8 +382,10 @@
   </div>
 
   <div id="upload-area">
-    <label id="upload-btn" for="file-input">＋ Přidat MP3 soubory</label>
+    <label class="upload-btn" for="file-input">＋ Soubory</label>
+    <label class="upload-btn" for="folder-input">📁 Složka</label>
     <input type="file" id="file-input" accept="audio/*" multiple>
+    <input type="file" id="folder-input" webkitdirectory multiple>
   </div>
 
   <div id="install-banner">
@@ -630,24 +634,29 @@ function loadTrack(idx) {
 }
 
 // ── File loading ──
-document.getElementById('file-input').addEventListener('change', e => {
-  const files = Array.from(e.target.files);
+function handleFiles(fileList) {
+  const AUDIO_EXTS = /\.(mp3|flac|ogg|wav|aac|m4a|opus|weba|webm)$/i;
+  const files = Array.from(fileList).filter(f => f.type.startsWith('audio/') || AUDIO_EXTS.test(f.name));
   if (!files.length) return;
+  // Sort: by path then name so folder structure is ordered
+  files.sort((a, b) => (a.webkitRelativePath || a.name).localeCompare(b.webkitRelativePath || b.name));
   const newTracks = files.map(f => ({
-    name: f.name.replace(/\.[^.]+$/, ''),
+    name: (f.webkitRelativePath || f.name).replace(/\/[^\/]+$/, '').replace(/.*\//, '') 
+          ? (f.webkitRelativePath || f.name).replace(/\.[^.]+$/, '').replace(/^.*\//, '')
+          : f.name.replace(/\.[^.]+$/, ''),
     url: URL.createObjectURL(f),
     dur: ''
   }));
+  const wasEmpty = currentIdx === -1;
   playlist = [...playlist, ...newTracks];
-  // Probe durations
-  newTracks.forEach((t, i) => {
+  newTracks.forEach(t => {
     const tmp = new Audio(t.url);
     tmp.addEventListener('loadedmetadata', () => {
-      playlist.find(p => p.url === t.url).dur = fmt(tmp.duration);
-      renderPlaylist();
+      const found = playlist.find(p => p.url === t.url);
+      if (found) { found.dur = fmt(tmp.duration); renderPlaylist(); }
     });
   });
-  if (currentIdx === -1) {
+  if (wasEmpty) {
     loadTrack(0);
     if (!audioCtx) setupAudio();
     if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -655,6 +664,15 @@ document.getElementById('file-input').addEventListener('change', e => {
   } else {
     renderPlaylist();
   }
+}
+
+document.getElementById('file-input').addEventListener('change', e => {
+  handleFiles(e.target.files);
+  e.target.value = '';
+});
+document.getElementById('folder-input').addEventListener('change', e => {
+  handleFiles(e.target.files);
+  e.target.value = '';
 });
 
 // ── Playback controls ──

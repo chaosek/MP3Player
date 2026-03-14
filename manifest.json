@@ -1,8 +1,9 @@
 {
   "name": "MP3 Player",
   "short_name": "MP3 Player",
-  "description": "MP3 přehrávač s vizualizacemi — Bars, Osciloskop, Plazma, Circle, Spectrum",
-  "start_url": "./index.html",
+  "description": "MP3 přehrávač s vizualizacemi",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0a0a0f",
@@ -12,15 +13,28 @@
       "src": "icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
   "categories": ["music", "entertainment"],
-  "lang": "cs"
+  "lang": "cs",
+  "prefer_related_applications": false
 }
